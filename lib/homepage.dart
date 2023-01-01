@@ -1,112 +1,89 @@
+import 'package:contact/newcontact.dart';
 import 'package:flutter/material.dart';
+import 'database.dart';
 
-class SliverAppBarExample extends StatefulWidget {
-  const SliverAppBarExample({super.key});
+class Contactlist extends StatefulWidget {
+  const Contactlist({Key? key}) : super(key: key);
 
   @override
-  State<SliverAppBarExample> createState() => _SliverAppBarExampleState();
+  State<Contactlist> createState() => _ContactlistState();
 }
 
-class _SliverAppBarExampleState extends State<SliverAppBarExample> {
-  bool _pinned = true;
-  bool _snap = false;
-  bool _floating = false;
+class _ContactlistState extends State<Contactlist> {
+  Future<List<Map<String, Object?>>?> getNotes() async {
+    final List<Map<String, Object?>>? notes =
+        await DatabaseProvider.db.getNotes();
+    return notes;
+  }
 
-// [SliverAppBar]s are typically used in [CustomScrollView.slivers], which in
-// turn can be placed in a [Scaffold.body].
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
-        slivers: <Widget>[
-          SliverAppBar(
-            pinned: _pinned,
-            snap: _snap,
-            floating: _floating,
-            expandedHeight: 160.0,
-            flexibleSpace: const FlexibleSpaceBar(
-              title: Text('SliverAppBar'),
-              background: FlutterLogo(),
-            ),
-          ),
-          const SliverToBoxAdapter(
-            child: SizedBox(
-              height: 20,
-              child: Center(
-                child: Text('Scroll to see the SliverAppBar in effect.'),
+        slivers: [
+          const SliverAppBar(
+            floating: true,
+            pinned: true,
+            backgroundColor: Colors.deepPurple,
+            expandedHeight: 200.0,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                'Contact',
+                textScaleFactor: 1.5,
               ),
+              centerTitle: true,
+              stretchModes: [StretchMode.blurBackground],
             ),
           ),
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                return Container(
-                  color: index.isOdd ? Colors.white : Colors.black12,
-                  height: 100.0,
-                  child: Center(
-                    child: Text('$index', textScaleFactor: 5),
-                  ),
-                );
-              },
-              childCount: 20,
-            ),
-          ),
+              delegate: SliverChildBuilderDelegate(
+            (context, index) => FutureBuilder(
+                future: getNotes(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<Map<String, Object?>>?> noteData) {
+                  if (noteData.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                        child: CircularProgressIndicator(color: Colors.blue));
+                  } else {
+                    if (noteData.data == null) {
+                      return const Center(
+                        child: Text("You don't have any note."),
+                      );
+                    } else {
+                      final List<Map<String, Object?>>? notes = noteData.data;
+                      return Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: ListView.builder(
+                          itemCount: notes?.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final String title =
+                                notes![index]['title']?.toString() ?? 'default';
+                            final String body =
+                                notes[index]['body']?.toString() ?? 'default';
+                            return Card(
+                              child: ListTile(
+                                title: Text(title),
+                                subtitle: Text(body),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+                  }
+                }),
+          )),
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: OverflowBar(
-            overflowAlignment: OverflowBarAlignment.center,
-            children: <Widget>[
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Text('pinned'),
-                  Switch(
-                    onChanged: (bool val) {
-                      setState(() {
-                        _pinned = val;
-                      });
-                    },
-                    value: _pinned,
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Text('snap'),
-                  Switch(
-                    onChanged: (bool val) {
-                      setState(() {
-                        _snap = val;
-                        // Snapping only applies when the app bar is floating.
-                        _floating = _floating || _snap;
-                      });
-                    },
-                    value: _snap,
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Text('floating'),
-                  Switch(
-                    onChanged: (bool val) {
-                      setState(() {
-                        _floating = val;
-                        _snap = _snap && _floating;
-                      });
-                    },
-                    value: _floating,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => const Addcontact()));
+        },
+        label: const Text('Add'),
+        icon: const Icon(Icons.add),
       ),
     );
   }

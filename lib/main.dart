@@ -10,12 +10,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: SliverAppBarExample(),
+      home: Contactlist(),
     );
   }
 }
 class Startpage extends StatelessWidget {
-  const Startpage({Key? key}) : super(key: key);
+   const Startpage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +25,15 @@ class Startpage extends StatelessWidget {
       backgroundColor: Colors.deepPurple[10],
       body: CustomScrollView(
         slivers:<Widget> [
-          SliverAppBar(
+          const SliverAppBar(
+            floating: true,
+            pinned: true,
             backgroundColor: Colors.deepPurple,
             expandedHeight: 200.0,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text('SliverAppBar'),
-              background: FlutterLogo(),
+              title: Text('Contact',textScaleFactor: 1.5,),
+              centerTitle: true,
+              stretchModes: [StretchMode.blurBackground],
             ),
           ),
           SliverToBoxAdapter(
@@ -169,6 +172,13 @@ class Startpage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: ((){}),
+          label:const Text('Add',textScaleFactor: 2,),
+      icon: const Icon(Icons.add),
+      elevation: 20,
+      backgroundColor: Colors.deepPurple[400],
       ),
     );
   }
